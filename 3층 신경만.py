@@ -32,3 +32,6 @@ network=init_network()
 x=np.array([1.0,5.0])
 y=foward(network,x)
 print(y)
+
+#3층 신경망
+#ㅇㄴㅁㅇㅁㅇㅁ

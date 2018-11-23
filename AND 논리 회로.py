@@ -37,5 +37,6 @@ def AND2(x,y):
         return 0
     elif(tmp>0):
         return 1
-    
+
+#ㄴㅁㅇㄴㅁㅇㅁㅇㅁ
 print(AND(x,y))
