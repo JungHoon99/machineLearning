@@ -7,17 +7,21 @@ senten=[]
 sentence=[]
 dic={}
 
+#데이터 학습을 위 한 전처리 함수
 def vectorize_sequences(sequences,diemension=33154):
     result=np.zeros((len(sequences),diemension))
     for i,sequence in enumerate(sequences):
         result[i,sequence]=1.
     return result
 
+#파일 불러오기
 with open('words2.txt','rt') as f:
     text=f.read()
 
+#파싱 하기
 text=text.split()
 
+#형태소 분석
 for i in range(len(text)):
     senten.extend(k.pos(text[i]))
 
@@ -32,6 +36,7 @@ for i in range(len(sentence)):
         dic.update({sentence[i]:a})
         a+=1
 
+#훈련에 사용 되는 문장들 형재 날씨와 최고기온 최저기온 미세먼지상태를 질문 가능하게 함
 senten=["오늘은 날씨는 어때","오늘 날씨 좀 알려줘",
 "오늘 날씨 어때","오늘 날씨 좋아","오늘은 날씨가 어때",
 "안녕","안녕하세요","오늘 최고기온이 몇도야",
@@ -39,6 +44,7 @@ senten=["오늘은 날씨는 어때","오늘 날씨 좀 알려줘",
 "오늘 최저기온","최저기온은","최저기온","미세먼지 어때?","미세먼지 알려줘","미세먼지 안좋아?"]
 
 x_train=[]
+#매칭되는 결과값들 one-hot 으로 표현
 y_train=[[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],
          [0,1,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],
          [0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,0,1],[0,0,0,0,1],[0,0,0,0,1]]
