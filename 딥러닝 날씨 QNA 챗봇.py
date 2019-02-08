@@ -1,3 +1,4 @@
+#5문항에 대해 대답을 하지만 18개의 학습집합으로도 학습이 아주 잘됨 
 from konlpy.tag import Twitter
 import numpy as np
 
@@ -6,6 +7,51 @@ k=Twitter()
 senten=[]
 sentence=[]
 dic={}
+
+
+#웹 크롤링 객체
+from urllib.request import urlopen, Request
+import urllib
+import bs4
+import time
+
+location = ''
+enc_location = urllib.parse.quote(location + '+날씨')
+
+url = 'https://search.naver.com/search.naver?ie=utf8&query='+ enc_location
+
+req = Request(url)
+page = urlopen(req)
+html = page.read()
+type(html)
+soup = bs4.BeautifulSoup(html,'html5lib')
+
+class weather():
+    def __init__(self):
+        self.today=0
+        self.degree=0
+        self.high_d=0
+        self.low_d=0
+        self.cast=0
+        self.dust=0
+        
+    def crawling(self):
+        self.degree=soup.find('p', class_='info_temperature').find('span', class_='todaytemp').text
+        self.high_d=soup.find('ul', class_='info_list').find('span', class_='max').find('span', class_='num').text
+        self.low_d=soup.find('ul', class_='info_list').find('span', class_='min').find('span', class_='num').text
+        self.cast=soup.find('ul', class_='info_list').find('p', class_='cast_txt').text
+
+    def get_degree(self):
+        return self.degree
+
+    def get_high_d(self):
+        return self.high_d
+
+    def get_low_d(self):
+        return self.low_d
+
+    def get_cast(self):
+        return self.cast
 
 #데이터 학습을 위 한 전처리 함수
 def vectorize_sequences(sequences,diemension=33154):
@@ -81,11 +127,23 @@ def request():
     for i in range(len(senten)):
         data.extend([dic.get( senten[i][0])])
     x_test.append(list(data))
-    if(len(x_test)==0):
-        lab['text']="제가 할 수 없는 일이에요"
     x_test=vectorize_sequences(x_test)
     predict = model.predict(x_test).argmax(axis=1)
     lab['text']=predict
+    
+def action(kind):
+    W=weather()
+    W.crawling()
+    if(kind==0):
+        lab['text']=str(W.get_cast())
+    elif(kind==1):
+        lab['text']="안녕하세요"
+    elif(kind==2):
+        lab['text']=str(W.get_high_d())
+    elif(kind==3):
+        lab['text']=str(W.get_low_d())
+    elif(kind==4):
+        lab['text']="미세먼지는 안좋아요"
 
 from tkinter import *
 
