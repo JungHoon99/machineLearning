@@ -198,7 +198,7 @@ def action(kind,day):
     elif(kind==3 and day==1):
         lab['text']="내일 최저기온은 "+str(W.get_tomorrow()[0][1])+" 입니다."
     elif(kind==4 and day==1):
-        lab['text']="미세먼지는 "+str(W.get_tomorrow()[0][-1])+"이에요"
+        lab['text']="내일 미세먼지는 "+str(W.get_tomorrow()[0][-1])+"이에요"
 
     elif(kind==0 and day==2):
         lab['text']="모레 날씨는 "+str(W.get_next_tomorrow()[0][2:-2])[1:-1]+"이에요"+" (현재온도 : "+ str(W.get_degree())+")"
@@ -209,7 +209,7 @@ def action(kind,day):
     elif(kind==3 and day==2):
         lab['text']="모레 최저기온은 "+str(W.get_next_tomorrow()[0][1])+" 입니다."
     elif(kind==4 and day==2):
-        lab['text']="미세먼지는 "+str(W.get_next_tomorrow()[0][-1])+"이에요"
+        lab['text']=" 모레 미세먼지는 "+str(W.get_next_tomorrow()[0][-1])+"이에요"
 
 from tkinter import *
 
