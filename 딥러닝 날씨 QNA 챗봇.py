@@ -1,40 +1,31 @@
 #5문항에 대해 대답을 하지만 18개의 학습집합으로도 학습이 아주 잘됨 
-from konlpy.tag import Twitter
-import numpy as np
-
-#필요한 변수
-check=None
-k=Twitter()
-senten=[]
-sentence=[]
-dic={}
-
-#bs4를 이용한 웹크롤링
 from urllib.request import urlopen, Request
 import urllib
 import bs4
 
-location = ''
-enc_location = urllib.parse.quote(location + '+날씨')
+def craw(weather):
+    location = str(weather)
+    enc_location = urllib.parse.quote(location + '+날씨')
 
-url = 'https://search.naver.com/search.naver?ie=utf8&query='+ enc_location
+    url = 'https://search.naver.com/search.naver?ie=utf8&query='+ enc_location
 
-req = Request(url)
-page = urlopen(req)
-html = page.read()
-type(html)
-soup = bs4.BeautifulSoup(html,'html5lib')
+    req = Request(url)
+    page = urlopen(req)
+    html = page.read()
+    return bs4.BeautifulSoup(html,'html5lib')
 
+soup = craw("")
 
 #날씨 웹크롤링 객체화
 class weather():
     def __init__(self):
-        self.today=0
         self.degree=0
         self.high_d=0
         self.low_d=0
         self.cast=0
         self.dust=0
+        self.tomorrow=0
+        self.next_tomorrow=0
         
     def crawling(self):
         self.degree=soup.find('p', class_='info_temperature').find('span', class_='todaytemp').text
@@ -42,6 +33,8 @@ class weather():
         self.low_d=soup.find('ul', class_='info_list').find('span', class_='min').find('span', class_='num').text
         self.cast=soup.find('ul', class_='info_list').find('p', class_='cast_txt').text
         self.dust=(str(soup.find('dl', class_='indicator').text).split()[1][:len(str(soup.find('dl', class_='indicator').text).split()[1])-2],str(soup.find('dl', class_='indicator').text).split()[1][-2:])
+        self.tomorrow=(soup.find('div', class_='tomorrow_area').text.split()[:soup.find('div', class_='tomorrow_area').text.split().index("미세먼지")+2],soup.find('div', class_='tomorrow_area').text.split()[soup.find('div', class_='tomorrow_area').text.split().index("미세먼지")+2:soup.find('div', class_='tomorrow_area').text.split().index("미세먼지")+2+soup.find('div', class_='tomorrow_area').text.split()[soup.find('div', class_='tomorrow_area').text.split().index("미세먼지")+2:].index("미세먼지")+2])
+        self.next_tomorrow=(soup.find('div',class_='tomorrow_area day_after _mainTabContent').text.split()[:soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split().index("미세먼지")+2],soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split()[soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split().index("미세먼지")+2:soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split().index("미세먼지")+2+soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split()[soup.find('div', class_='tomorrow_area day_after _mainTabContent').text.split().index("미세먼지")+2:].index("미세먼지")+2])
 
     def get_degree(self):   #현재 온도 반환
         return self.degree
@@ -58,6 +51,12 @@ class weather():
     def get_dust(self):     #미세먼지 지수
         return self.dust
 
+    def get_tomorrow(self):
+        return self.tomorrow
+
+    def get_next_tomorrow(self):
+        return self.next_tomorrow
+
 # one_hot 벡터화 함수
 def vectorize_sequences(sequences,diemension=33182):
     result=np.zeros((len(sequences),diemension))
@@ -68,6 +67,8 @@ def vectorize_sequences(sequences,diemension=33182):
 #파일 읽어오기
 with open('words2.txt','rt') as f:
     text=f.read()
+with open('words.txt','rt') as l:
+    location=l.read()
 
 #뛰어쓰기 대로 파싱
 text=text.split()
@@ -88,6 +89,8 @@ for i in range(len(sentence)):
         dic.update({sentence[i]:a})
         a+=1
 
+del sentence
+
 #학습 문장 데이터
 senten=["오늘은 날씨는 어때","오늘 날씨 좀 알려줘",
 "오늘 날씨 어때","오늘 날씨 좋아","오늘은 날씨가 어때",
@@ -98,10 +101,10 @@ senten=["오늘은 날씨는 어때","오늘 날씨 좀 알려줘",
 
 x_train=[]
 # 학습 문장에 맞는 결과 데이터
-y_train=[[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0],
-         [0,1,0,0,0],[0,1,0,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],
-         [0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,1,0],[0,0,0,0,1],[0,0,0,0,1],
-         [0,0,0,0,1],[1,0,0,0,0],[1,0,0,0,0],[1,0,0,0,0]]
+y_train=[[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0],
+         [0,1,0,0,0,0,0,0,0],[0,1,0,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],[0,0,1,0,0,0,0,0,0],
+         [0,0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0,0],[0,0,0,1,0,0,0,0,0],[0,0,0,0,1,0,0,0,0],[0,0,0,0,1,0,0,0,0],
+         [0,0,0,0,1,0,0,0,0],[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0],[1,0,0,0,0,0,0,0,0]]
 
 
 #학습 문장 과 결과 데이터 가공
@@ -126,41 +129,87 @@ model = models.Sequential()
 #총 3개의 은닉층을 가진 모델 층 쌓기  
 model.add(layers.Dense(16,activation='relu',input_shape=(33182,)))
 model.add(layers.Dense(16,activation='softmax'))
-model.add(layers.Dense(5,activation='softmax'))
+model.add(layers.Dense(9,activation='softmax'))
 
-#모델의 오티마이저 설정과 손실 함수 설정
+#모델의 옵티마이저 설정과 손실 함수 설정
 model.compile(optimizer=optimizers.RMSprop(lr=0.001),loss='categorical_crossentropy',metrics=['acc'])
 
 #모델 학습
-model.fit(x_train,y_train,batch_size=21 ,epochs=2500)
+model.fit(x_train,y_train,batch_size=21 ,epochs=3000)
+
+W=weather()
+W.crawling()
 
 #학습 신경망에서의 결과 출력
 def request():
+    global soup
     senten=k.pos(ent.get())
     x_test=[]
     data=[]
+    day=0
+    for i in range(len(senten)):
+        if((senten[i][0] in location.split()) == True):
+            soup=craw(senten[i][0])
+            del senten[i]
+            break
+        
+    for i in range(len(senten)):
+        if((senten[i][0] in '오늘')== True):
+            day=0
+        elif((senten[i][0] in '내일')== True):
+            day=1
+        elif((senten[i][0] in '모레')== True):
+            day=2
+        
     for i in range(len(senten)):
         data.extend([dic.get( senten[i][0])])
+        
     x_test.append(list(data))
+    
+    for i in range(x_test[0].count(None)):
+        x_test[0].remove(None)
+        
     x_test=vectorize_sequences(x_test)
     predict = model.predict(x_test).argmax(axis=1)
-    action(predict)
+    action(predict,day)
 
 #대답
-def action(kind):
+def action(kind,day):
     W=weather()
     W.crawling()
-    if(kind==0):
+    if(kind==0 and day==0):
         lab['text']="날씨는 "+str(W.get_cast())+" (현재온도 : "+ str(W.get_degree())+")"
-    elif(kind==1):
+    elif(kind==1 and day==0):
         lab['text']="안녕하세요"
-    elif(kind==2):
-        lab['text']="최고기온은 "+str(W.get_high_d())+"도 입니다."
-    elif(kind==3):
-        lab['text']="최저기온은 "+str(W.get_low_d())+"도 입니다."
-    elif(kind==4):
+    elif(kind==2 and day==0):
+        lab['text']="최고기온은 "+str(W.get_high_d())+"도씨℃ 입니다."
+    elif(kind==3 and day==0):
+        lab['text']="최저기온은 "+str(W.get_low_d())+"도씨℃ 입니다."
+    elif(kind==4 and day==0):
         a=W.get_dust()
         lab['text']="미세먼지는 "+a[0]+"로 "+a[1]+"이에요"
+        
+    elif(kind==0 and day==1):
+        lab['text']=" 내일 날씨는 "+str(W.get_tomorrow()[0][2:-2])[1:-1]+"이에요"+" (현재온도 : "+ str(W.get_degree())+")"
+    elif(kind==1 and day==1):
+        lab['text']="안녕하세요"
+    elif(kind==2 and day==1):
+        lab['text']="내일 최고기온은 "+str(W.get_tomorrow()[1][1])+" 입니다."
+    elif(kind==3 and day==1):
+        lab['text']="내일 최저기온은 "+str(W.get_tomorrow()[0][1])+" 입니다."
+    elif(kind==4 and day==1):
+        lab['text']="미세먼지는 "+str(W.get_tomorrow()[0][-1])+"이에요"
+
+    elif(kind==0 and day==2):
+        lab['text']="모레 날씨는 "+str(W.get_next_tomorrow()[0][2:-2])[1:-1]+"이에요"+" (현재온도 : "+ str(W.get_degree())+")"
+    elif(kind==1 and day==2):
+        lab['text']="안녕하세요"
+    elif(kind==2 and day==2):
+        lab['text']="모레 최고기온은 "+str(W.get_next_tomorrow()[1][1])+" 입니다."
+    elif(kind==3 and day==2):
+        lab['text']="모레 최저기온은 "+str(W.get_next_tomorrow()[0][1])+" 입니다."
+    elif(kind==4 and day==2):
+        lab['text']="미세먼지는 "+str(W.get_next_tomorrow()[0][-1])+"이에요"
 
 from tkinter import *
 
