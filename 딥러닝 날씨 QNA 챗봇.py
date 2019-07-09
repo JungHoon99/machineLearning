@@ -1,4 +1,14 @@
 #5문항에 대해 대답을 하지만 18개의 학습집합으로도 학습이 아주 잘됨 
+from konlpy.tag import Twitter	
+import numpy as np	
+
+ #필요한 변수	
+check=None	
+k=Twitter()	
+senten=[]	
+sentence=[]	
+dic={}
+
 from urllib.request import urlopen, Request
 import urllib
 import bs4
